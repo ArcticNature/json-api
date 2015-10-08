@@ -1,0 +1,13 @@
+{
+  "name": "clients-json",
+  "type": "nodejs",
+  "module-type": "core",
+
+  "deps": ["protocols-daemon"],
+
+  "targets": {
+    "debug":   { },
+    "release": { },
+    "test":    { }
+  }
+}

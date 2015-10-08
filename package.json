@@ -1,0 +1,22 @@
+{
+  "name": "snowfox-json-client",
+  "description": "SnowFox API JSON adapter",
+  "version": "0.0.0",
+
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+
+  "author": "Stefano Pogliani <stefano@spogliani.net> (http://spogliani.net/)",
+  "license": "BSD",
+
+  "dependencies": {
+    "express": "~4.13.3",
+    "protobufjs": "~4.1.1"
+  },
+
+  "devDependencies": {
+    "mocha": "~2.3.3"
+  }
+}
