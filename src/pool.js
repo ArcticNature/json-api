@@ -1,4 +1,6 @@
 var Promise = require("bluebird");
+
+var exceptions = require("./exceptions");
 var Connection = require("./connection");
 
 
@@ -32,7 +34,7 @@ Pool.prototype._getConnection = function _getConnection() {
 
     // Pool of connection is full?
     if (_this._total_connections >= _this._max_connections) {
-      reject(new Error("Pool exauseted"));
+      reject(new exceptions.PoolExhaused());
       return;
     }
 
