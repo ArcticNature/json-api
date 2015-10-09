@@ -64,6 +64,7 @@ util.inherits(Connection, EventEmitter);
 /*! Handles a TCP connection close. */
 Connection.prototype._closed = function _closed(has_errors) {
   this._socket_connected = false;
+  this._socket.destroy();
   this.emit("closed", has_errors);
 };
 
@@ -186,6 +187,9 @@ Connection.prototype.send = function send(message) {
   len_buffer.writeUInt32BE(message_len, 0);
 
   // Send length and data.
-  this._socket.send(len_buffer);
-  this._socket.send(message.toBuffer());
+  var _this = this;
+  this._socket.write(len_buffer);
+  this._socket.write(message.toBuffer(), function() {
+    _this.emit("flushed");
+  });
 };

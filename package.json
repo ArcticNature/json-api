@@ -12,7 +12,8 @@
   "license": "BSD",
 
   "dependencies": {
-    "express": "~4.13.3",
+    "bluebird": "~2.10.2",
+    "express":  "~4.13.3",
     "protobufjs": "~4.1.1"
   },
 

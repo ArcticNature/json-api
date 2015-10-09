@@ -70,13 +70,17 @@ MockSocket.prototype.data = function connect(chunk) {
   delayed_emitter(this, ["data", chunk]);
 };
 
+MockSocket.prototype.destroy = function destroy() {
+  // NOOP.
+};
+
 // Smulate error.
 MockSocket.prototype.fail = function fail(ex) {
   delayed_emitter(this, ["error", ex]);
 };
 
 // Keep sent buffers for asserts.
-MockSocket.prototype.send = function(send) {
+MockSocket.prototype.write = function(send) {
   this._sent_data.push(send);
 };
 
