@@ -7,7 +7,7 @@ var express_utils = module.exports = {};
  * Should be used at the root of the API routing to ensure that all
  * errors are reported correctly.
  */
-express_utils.errorHandler = function errorHandler(err, req, res) {
+express_utils.errorHandler = function errorHandler(err, req, res, next) {
   if (err instanceof exceptions.HTTPError) {
     res.status(err.statusCode);
     if (err.json) {
@@ -36,6 +36,11 @@ express_utils.errorHandler = function errorHandler(err, req, res) {
         "Unhandler error in API request: {%s} %s\nTrace: %s",
         err.name, err.message, err.stack
     );
+  }
+
+  // Proceed in the error handling.
+  if (next) {
+    next(err);
   }
 };
 

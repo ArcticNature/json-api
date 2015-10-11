@@ -122,6 +122,11 @@ Injector.prototype.inject = function inject(context, variables) {
 };
 
 
+/**
+ * @exception InvalidDefinition
+ * The variable definition is not valid or an operation
+ * on a variable confilcts with its definition.
+ */
 Injector.InvalidDefinition = function InvalidDefinition(message) {
   // Call super constructor.
   Error.call(this, message);
@@ -129,9 +134,32 @@ Injector.InvalidDefinition = function InvalidDefinition(message) {
 };
 util.inherits(Injector.InvalidDefinition, Error);
 
+
+/**
+ * @exception UndefinedVariable
+ * The variable to operate on does not exist.
+ */
 Injector.UndefinedVariable = function UndefinedVariable(name) {
   // Call super constructor.
   Error.call(this, "Undefined variable '" + name + "'");
   Error.captureStackTrace(this, Injector.UndefinedVariable);
 };
 util.inherits(Injector.UndefinedVariable, Error);
+
+
+/**
+ * Injects variables in a context for express.js
+ * The context is attached to the request object so that
+ * `req.context.<variable>` will make <variable> available.
+ *
+ * @param {!Injector} injector The injector instance to use.
+ * @param {!Array.<String>|!Object.<String, ?String>} variables
+ *    The variables to inject into the context.
+ */
+Injector.express_inject = function express_inject(injector, variables) {
+  return function(req, res, next) {
+    req.context = {};
+    injector.inject(req.context, variables);
+    next();
+  };
+};
