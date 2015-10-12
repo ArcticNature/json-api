@@ -10,6 +10,9 @@ var Request  = require("./request");
 
 suite("API /server", function() {
   setup(function() {
+    // Increase test timeout as the RaspberryPi running Jenkins needs more time.
+    this.timeout(10 * 1000);
+
     this.app = api.app;
     this.injector = api.injector;
 
