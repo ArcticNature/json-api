@@ -5,6 +5,7 @@ var util = require("util");
 
 var EventEmitter = events.EventEmitter;
 
+var logging = require("./logging");
 var protos = require("./deps/protocols-daemon/protocols-daemon");
 var proto_buf = protos.sf.protocols.daemon;
 
@@ -63,6 +64,7 @@ util.inherits(Connection, EventEmitter);
 
 /*! Handles a TCP connection close. */
 Connection.prototype._closed = function _closed(has_errors) {
+  logging.info("Closing TCP connection with the server.");
   this._socket_connected = false;
   this._socket.destroy();
   this.emit("closed", has_errors);
@@ -88,6 +90,7 @@ Connection.prototype._connect = function _connect() {
 
 /*! TCP connection ready, finish setup. */
 Connection.prototype._connected = function _connected() {
+  logging.info("TCP connection established.");
   this._socket_connected = true;
   this._socket.on("data", this._socket_data.bind(this));
   this.emit("connected");
@@ -165,6 +168,8 @@ Connection.prototype._socket_data_msg = function _socket_data_msg(
 
 // Handles a socket error event.
 Connection.prototype._socket_error = function _socket_error(err) {
+  logging.debug("Recieved TCP error: ", err);
+
   // Terminate connection if needed.
   if (this._socket_connected) {
     this._socket_connected = false;

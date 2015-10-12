@@ -14,10 +14,11 @@
   "dependencies": {
     "bluebird": "~2.10.2",
     "express":  "~4.13.3",
+    "long": "~2.3.0",
     "protobufjs": "~4.1.1"
   },
 
   "devDependencies": {
-    "mocha": "~2.3.3"
+    "supertest": "~1.1.0"
   }
 }
