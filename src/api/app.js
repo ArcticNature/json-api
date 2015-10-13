@@ -4,7 +4,8 @@ var Injector = require("./utils/injector");
 
 
 // Routes.
-var server = require("./server");
+var server   = require("./server");
+var services = require("./services");
 
 
 // Build application.
@@ -17,7 +18,8 @@ app.use(express_utils.promiseHandler);
 app.use(express_utils.errorHandler);
 
 // Mount routes.
-app.use("/server", server);
+app.use("/server",   server);
+app.use("/services", services);
 
 
 // Module interface.

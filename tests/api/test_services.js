@@ -6,7 +6,7 @@ var messages = protos.sf.protocols.daemon;
 var Request  = require("./request");
 
 
-suite("API /server", function() {
+suite("API /services", function() {
   setup(function() {
     // Increase test timeout as the RaspberryPi running Jenkins needs more time.
     this.timeout(10 * 1000);
@@ -18,39 +18,41 @@ suite("API /server", function() {
     this.supertest = new Request(this.app);
   });
 
-  test("/state", function() {
+  test("/", function() {
     // Create mock response.
-    var mock_state = new messages.State();
-    mock_state.config_version = "not-applicable";
-    mock_state.status_code = 4;
-    mock_state.status_message = "Up and running";
-    mock_state.start_time = 33;
-    mock_state.version = "0.0.0-8296ad5";
-    mock_state.version_date = "2015-10-11 20:49:30";
+    var mock_services = new messages.ServiceList();
+    var item = new messages.ServiceList.Item();
+    item.id = "abc";
+    item.status = 1;
+    item.version = "def";
+    mock_services.items.push(item);
+
+    item = new messages.ServiceList.Item();
+    item.id = "123";
+    item.status = 2;
+    item.version = "456";
+    mock_services.items.push(item);
 
     var mock_response = new messages.Message();
-    mock_response.code = messages.Message.Code.State;
-    mock_response.set(".sf.protocols.daemon.State.msg", mock_state);
+    mock_response.code = messages.Message.Code.ServiceList;
+    mock_response.set(".sf.protocols.daemon.ServiceList.msg", mock_services);
 
     // Make the request and check the result.
     this.pool.addResponse(mock_response);
-    var request = this.supertest.get("/server/state");
+    var request = this.supertest.get("/services");
 
     // Wait for it to finish and run assertions.
     return request.then(function(result) {
       var response = result.res;
-      var expected = {
-        status: {
-          code: 4,
-          message: "Up and running",
-          "start-time": 33
-        },
-        version: {
-          "build-date": "2015-10-11 20:49:30",
-          config: "not-applicable",
-          "snow-fox-daemon": "0.0.0-8296ad5"
-        }
-      };
+      var expected = [{
+        id: "abc",
+        status:  1,
+        version: "def"
+      }, {
+        id: "123",
+        status:  2,
+        version: "456"
+      }];
 
       assert.equal(200, response.statusCode);
       assert.deepEqual(expected, response.body);

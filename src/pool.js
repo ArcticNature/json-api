@@ -3,6 +3,9 @@ var Promise = require("bluebird");
 var exceptions = require("./exceptions");
 var Connection = require("./connection");
 
+var proto_buf = require("./deps/protocols-daemon/protocols-daemon");
+var messages = proto_buf.sf.protocols.daemon;
+
 
 /**
  * @class Pool
@@ -68,13 +71,16 @@ Pool.prototype._request = function _request(
 
       // Send message and waits for errors/responses.
       connection.send(request);
-      connection.on("error", reject);
+      connection.once("error", reject);
 
       // On success depends on the interet in response.
-      connection.on(success_event, function() {
-        var response = success_callback.apply(_this, arguments);
+      connection.once(success_event, function() {
         _this._instances.push(connection);
-        resolve(response);
+        try {
+          resolve(success_callback.apply(_this, arguments));
+        } catch(ex) {
+          reject(ex);
+        }
       });
 
     });
@@ -103,6 +109,15 @@ Pool.prototype.request = function request(req) {
  */
 Pool.prototype.requestResponse = function requestResponse(req) {
   return this._request(req, "message", function(message) {
+    // If the message is an error convert it into an exception.
+    if (message.code === messages.Message.Code.Error) {
+      var error = message.get(".sf.protocols.daemon.Error.msg");
+      var exc = new exceptions.HTTPError(502, error.message);
+      exc.code = error.code;
+      throw exc;
+    }
+
+    // Otherwise return the decoded message.
     return message;
   });
 };

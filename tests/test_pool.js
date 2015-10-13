@@ -1,6 +1,11 @@
 var assert = require("assert");
 var util   = require("util");
-var Pool   = require("../module/pool");
+
+var Pool = require("../module/pool");
+var exceptions = require("../module/exceptions");
+
+var proto_buf = require("../module/deps/protocols-daemon/protocols-daemon");
+var messages = proto_buf.sf.protocols.daemon;
 
 
 var MockConnection = function MockConnection() {
@@ -29,6 +34,7 @@ MockConnection.prototype.on = function on(event, handler) {
   this.handlers[event] = this.handlers[event] || [];
   this.handlers[event].push(handler);
 };
+MockConnection.prototype.once = MockConnection.prototype.on;
 
 MockConnection.prototype.removeListener = function(event, handler) {
   var hs  = this.handlers[event] || [];
@@ -118,21 +124,46 @@ suite("Pool", function() {
 
   suite("requestResponse", function() {
     setup(function() {
-      var _this = this;
-      var pool  = this.pool;
+      return this.pool.request(null);
+    });
 
-      return pool.request(null).then(function() {
-        pool._instances[0].send_args = ["message", 42];
-        return pool.requestResponse(null);
+    test("connections are returned after a response", function() {
+      var pool = this.pool;
+      pool._instances[0].send_args = ["message", 42];
 
-      }).then(function(response) {
-          _this.response = response;
+      return pool.requestResponse(null).then(function(response) {
+        assert.equal(42, response);
+        assert.equal(1,  pool._instances.length);
       });
     });
 
-    test("are returned after a response", function() {
-      assert.equal(42, this.response);
-      assert.equal(1,  this.pool._instances.length);
+    test("errors cause the promise to fail", function() {
+      var error = new messages.Message();
+      var info  = new messages.Error();
+      error.code = messages.Message.Code.Error;
+      error.set(".sf.protocols.daemon.Error.msg", info);
+      info.code = -1;
+      info.message = "test";
+
+      var pool = this.pool;
+      pool._instances[0].send_args = ["message", error];
+
+      return pool.requestResponse(null).catch(function(ex) {
+        assert(ex instanceof exceptions.HTTPError, "Not HTTP Error");
+        assert.equal(-1, ex.code);
+        assert.equal("test", ex.message);
+
+        return true;
+      }).then(function(from_error_handler) {
+        // If the promise was successfull because of the catch
+        // handler passing return now.
+        if (from_error_handler === true) {
+          return;
+        }
+
+        // Otherwise raise a failure.
+        throw new Error("Should not resolve request");
+      });
     });
   });
 });

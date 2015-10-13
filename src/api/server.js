@@ -11,6 +11,9 @@ var messages = protos.sf.protocols.daemon;
 var router = module.exports = express.Router();
 
 
+/**
+ * Returns the state of the SnowFox daemon.
+ */
 router.get("/state", function(req, res) {
   var message  = new messages.Message();
   message.code = messages.Message.Code.State;
