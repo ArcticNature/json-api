@@ -101,6 +101,23 @@ Pool.prototype.request = function request(req) {
   return this._request(req, "flushed", function() {});
 };
 
+
+/**
+ * Sends a message to the server and waits for an acknowledge response.
+ * @param {!Object} message The message to send to the server.
+ * @returns {!Promise}
+ *   A promise that is fullfilled when the ack is received.
+ */
+Pool.prototype.requestAck = function requestAck(req) {
+  return this.requestResponse(req).then(function(msg) {
+    if (msg.code !== messages.Message.Code.Ack) {
+      throw exceptions.HTTPError(500, "Unexpected message from server.");
+    }
+
+    return { acknowledge: true };
+  });
+};
+
 /**
  * Sends a message to the server and waits for a response from it.
  * @param {!Object} message The message to send to the server.

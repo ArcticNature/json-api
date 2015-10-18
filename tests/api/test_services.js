@@ -13,7 +13,9 @@ suite("API /services", function() {
 
     this.app = api.app;
     this.injector = api.injector;
+
     this.pool = api.pool;
+    this.pool.clear();
 
     this.supertest = new Request(this.app);
 
@@ -53,6 +55,20 @@ suite("API /services", function() {
       );
 
       return full_message;
+    };
+
+    /**
+     * Asserts that the request message has the given code and service id.
+     * @param {!Number} code       The expected request code.
+     * @param {!String} service_id The expected request service id.
+     */
+    this.assert_request_with_service_id = function(code, service_id) {
+      var request = this.pool._requests[0];
+      var info = request.get(".sf.protocols.daemon.ServiceId.msg");
+      var actual_sid = info.service_id;
+
+      assert.equal(code, request.code);
+      assert.equal(service_id, actual_sid);
     };
   });
 
@@ -154,6 +170,7 @@ suite("API /services", function() {
       service_state, "ServiceState"
     );
 
+    var _this = this;
     return request.then(function(result) {
       var response = result.res;
       var expected = {
@@ -166,7 +183,32 @@ suite("API /services", function() {
 
       assert.equal(200, response.statusCode);
       assert.deepEqual(expected, response.body);
+      _this.assert_request_with_service_id(
+        messages.Message.Code.ServiceState,
+        "service.with.no.instances"
+      );
+    });
+  });
+
+  test("PUT /service.to.start", function() {
+    // Create mock response.
+    var ack  = new messages.Message();
+    ack.code = messages.Message.Code.Ack;
+
+    // Make the request and assert on the response.
+    this.pool.addResponse(ack);
+    var request = this.supertest.put("/services/to.start");
+
+    var _this = this;
+    return request.then(function(result) {
+      var response = result.res;
+      var expected = { acknowledge: true };
+
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(expected, response.body);
+      _this.assert_request_with_service_id(
+        messages.Message.Code.ServiceStart, "to.start"
+      );
     });
   });
 });
-

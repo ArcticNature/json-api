@@ -64,3 +64,18 @@ router.get("/:service_id", function(req, res) {
     };
   });
 });
+
+
+/**
+ * Starts a new instance of the service.
+ */
+router.put("/:service_id", function(req, res) {
+  var message    = new messages.Message();
+  var service_id = new messages.ServiceId();
+
+  message.code = messages.Message.Code.ServiceStart;
+  service_id.service_id = req.params.service_id;
+  message.set(".sf.protocols.daemon.ServiceId.msg", service_id);
+
+  res._promise = req.context.pool.requestAck(message);
+});

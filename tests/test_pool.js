@@ -166,4 +166,8 @@ suite("Pool", function() {
       });
     });
   });
+
+  suite("requestAck", function() {
+    //
+  });
 });

@@ -62,7 +62,7 @@ express_utils.promiseHandler = function errorHandler(req, res, next) {
 
   if (res._promise && typeof res._promise.then === "function") {
     res._promise.then(function(data) {
-      res.status(200).json(data);
+      res.json(data);
 
     }).catch(function(err) {
       express_utils.errorHandler(err, req, res, next);

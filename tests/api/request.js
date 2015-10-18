@@ -24,3 +24,17 @@ Request.prototype.get = function get() {
     });
   });
 };
+
+// Proxy supertest.put
+Request.prototype.put = function put() {
+  var request = this.supertest.put.apply(this.supertest, arguments);
+  return new Promise(function(resolve, reject) {
+    request.end(function(err, res) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  });
+};

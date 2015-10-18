@@ -1,5 +1,9 @@
 var Promise = require("../../module/node_modules/bluebird");
 
+var exceptions = require("../../module/exceptions");
+var proto_buf = require("../../module/deps/protocols-daemon/protocols-daemon");
+var messages = proto_buf.sf.protocols.daemon;
+
 
 /**
  * Mock connection pool so that tests can avoid calling the
@@ -11,19 +15,33 @@ var Promise = require("../../module/node_modules/bluebird");
  *   - Requests without responses will fail.
  */
 var MockPool = module.exports = function MockPool() {
-  this._requests  = [];
-  this._responses = [];
-  this._response_idx = 0;
+  this.clear();
 };
 
 MockPool.prototype.addResponse = function addResponse(message) {
   this._responses.push(message);
 };
 
+MockPool.prototype.clear = function clear() {
+  this._requests  = [];
+  this._responses = [];
+  this._response_idx = 0;
+};
+
 MockPool.prototype.request = function request(message) {
   this._requests.push(message);
   return new Promise(function(resolve) {
     resolve();
+  });
+};
+
+MockPool.prototype.requestAck = function requestAck(req) {
+  return this.requestResponse(req).then(function(msg) {
+    if (msg.code !== messages.Message.Code.Ack) {
+      throw exceptions.HTTPError(500, "Unexpected message from server.");
+    }
+
+    return { acknowledge: true };
   });
 };
 
