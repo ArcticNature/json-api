@@ -111,7 +111,12 @@ Pool.prototype.request = function request(req) {
 Pool.prototype.requestAck = function requestAck(req) {
   return this.requestResponse(req).then(function(msg) {
     if (msg.code !== messages.Message.Code.Ack) {
-      throw exceptions.HTTPError(500, "Unexpected message from server.");
+      var ex = new exceptions.HTTPError(
+        500, "Unexpected message from server."
+      );
+
+      ex.return_code = msg.code;
+      throw ex;
     }
 
     return { acknowledge: true };

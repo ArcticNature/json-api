@@ -168,6 +168,42 @@ suite("Pool", function() {
   });
 
   suite("requestAck", function() {
-    //
+    setup(function() {
+      return this.pool.request(null);
+    });
+
+    test("fails on non ack", function() {
+      var stop = new messages.Message();
+      stop.code = messages.Message.Code.Stop;
+      this.pool._instances[0].send_args = ["message", stop];
+
+      return this.pool.requestAck(null).catch(function(ex) {
+        assert(ex instanceof exceptions.HTTPError, "Not HTTP Error");
+        assert.equal(ex.statusCode, 500);
+        assert.equal(ex.return_code, messages.Message.Code.Stop);
+        assert.equal(ex.message, "Unexpected message from server.");
+
+        return true;
+      }).then(function(from_error_handler) {
+        // If the promise was successfull because of the catch
+        // handler passing return now.
+        if (from_error_handler === true) {
+          return;
+        }
+
+        // Otherwise raise a failure.
+        throw new Error("Should not resolve request");
+      });
+    });
+
+    test("resolves on ack", function() {
+      var ack = new messages.Message();
+      ack.code = messages.Message.Code.Ack;
+      this.pool._instances[0].send_args = ["message", ack];
+
+      return this.pool.requestAck(null).then(function(msg) {
+        assert.deepEqual(msg, { acknowledge: true });
+      });
+    });
   });
 });
