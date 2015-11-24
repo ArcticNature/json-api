@@ -21,6 +21,7 @@ suite("API /server", function() {
   test("/state", function() {
     // Create mock response.
     var mock_state = new messages.State();
+    mock_state.config_alias   = "<latest>";
     mock_state.config_version = "not-applicable";
     mock_state.status_code = 4;
     mock_state.status_message = "Up and running";
@@ -40,6 +41,10 @@ suite("API /server", function() {
     return request.then(function(result) {
       var response = result.res;
       var expected = {
+        configuration: {
+          alias: "<latest>",
+          revision: "not-applicable"
+        },
         status: {
           code: 4,
           message: "Up and running",
@@ -47,7 +52,6 @@ suite("API /server", function() {
         },
         version: {
           "build-date": "2015-10-11 20:49:30",
-          config: "not-applicable",
           "snow-fox-daemon": "0.0.0-8296ad5"
         }
       };

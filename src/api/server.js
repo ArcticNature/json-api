@@ -26,6 +26,10 @@ router.get("/state", function(req, res) {
     var start_time  = api_utils.int64(state.start_time, precise);
 
     return {
+      configuration: {
+        alias: state.config_alias,
+        revision: state.config_version
+      },
       status: {
         code: status_code,
         message: state.status_message,
@@ -33,7 +37,6 @@ router.get("/state", function(req, res) {
       },
       version: {
         "build-date": state.version_date,
-        config: state.config_version,
         "snow-fox-daemon": state.version
       }
     };
