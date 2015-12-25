@@ -190,6 +190,35 @@ suite("API /services", function() {
     });
   });
 
+  test("DELETE /running/instance", function() {
+    // Create mock response.
+    var ack  = new messages.Message();
+    ack.code = messages.Message.Code.Ack;
+
+    // Make the request and assert on the response.
+    this.pool.addResponse(ack);
+    var request = this.supertest.del("/services/running/instance");
+
+    var _this = this;
+    return request.then(function(result) {
+      // Test request.
+      var request = _this.pool._requests[0];
+      console.log("~~~", _this.pool._requests);
+      assert.equal(messages.Message.Code.ServiceStop, request.code);
+
+      var info = request.get(".sf.protocols.daemon.ServiceStop.msg");
+      assert.equal("running",  info.service_id);
+      assert.equal("instance", info.instance_id);
+
+      // Test response.
+      console.log("~~~", result);
+      var response = result.res;
+      var expected = { acknowledge: true };
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(expected, response.body);
+    });
+  });
+
   test("PUT /service.to.start", function() {
     // Create mock response.
     var ack  = new messages.Message();

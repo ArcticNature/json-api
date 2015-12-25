@@ -11,6 +11,20 @@ var Request = module.exports = function Request(app) {
   this.supertest = supertest(app);
 };
 
+// Proxy supertest.del
+Request.prototype.del = function del() {
+  var request = this.supertest.del.apply(this.supertest, arguments);
+  return new Promise(function(resolve, reject) {
+    request.end(function(err, res) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  });
+};
+
 // Proxy supertest.get
 Request.prototype.get = function get() {
   var request = this.supertest.get.apply(this.supertest, arguments);

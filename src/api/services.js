@@ -34,9 +34,21 @@ router.get("/", function(req, res) {
 });
 
 
-/**
- * Returns information about a running service.
- */
+/** Stops a running instance of a service. */
+router.delete("/:service_id/:instance_id", function(req, res) {
+  var message = new messages.Message();
+  var stop    = new messages.ServiceStop();
+
+  message.code = messages.Message.Code.ServiceStop;
+  stop.instance_id = req.params.instance_id;
+  stop.service_id  = req.params.service_id;
+  message.set(".sf.protocols.daemon.ServiceStop.msg", stop);
+
+  res._promise = req.context.pool.requestAck(message);
+});
+
+
+/** Returns information about a running service. */
 router.get("/:service_id", function(req, res) {
   var message    = new messages.Message();
   var service_id = new messages.ServiceId();
@@ -66,9 +78,7 @@ router.get("/:service_id", function(req, res) {
 });
 
 
-/**
- * Starts a new instance of the service.
- */
+/** Starts a new instance of the service. */
 router.put("/:service_id", function(req, res) {
   var message    = new messages.Message();
   var service_id = new messages.ServiceId();
